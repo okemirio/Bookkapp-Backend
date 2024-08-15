@@ -1,7 +1,7 @@
 const express = require('express');
 const routes =express.Router();
 const Cart = require('../../models/cart'); 
-const {addCart,deleteCart,emptyCart,getCart} = require('../../controller/cart_controller');
+const {addCart,deleteCart,emptyCart,getCart, updateCart} = require('../../controller/cart_controller');
 const jwt = require('jsonwebtoken');
 
 // Authentication middleware
@@ -29,9 +29,12 @@ routes.post('/cart/add', authenticateToken, addCart);
 routes.delete('/cart/:productId', authenticateToken, deleteCart);
 
   
-routes.delete('/cart/', authenticateToken, emptyCart);
+routes.delete('/cart', authenticateToken, emptyCart);
 
 routes.get('/cart/read', authenticateToken, getCart);
+
+routes.put('/cart/update/:productId', authenticateToken, updateCart);
+
 
   module.exports = routes;
   

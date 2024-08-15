@@ -36,50 +36,75 @@ const LogReg = async (req, res) => {
     }
   }
 
-const Log = async (req, res) => {
-  const { email, password } = req.body;
-  console.log(req.body)
-  // Validate required fields
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
-  }
-
+  const Log = async (req, res) => {
+    const { email, password } = req.body;
+    console.log(req.body);
+  
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+  
+    try {
+      console.log(`Login attempt for email: ${email}`);
+      
+      // Check if the user exists
+      const user = await UserModel.findOne({ email });
+      if (!user) {
+        console.log('User not found');
+        return res.status(400).json({ message: 'Invalid email or password' });
+      }
+  
+      // Compare the password with the hashed password in the database
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        console.log('Invalid password');
+        return res.status(400).json({ message: 'Invalid email or password' });
+      }
+  
+      // Generate a JWT token
+      const expiresIn = 1800; // Token expiration time in seconds (30 minutes)
+      const token = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: `${expiresIn}s` }
+      );
+  
+      console.log('Login successful, token generated');
+      return res.json({ token, expiresIn, message: 'Login successful' });
+    } catch (err) {
+      console.error('Error logging in user:', err.message);
+      return res.status(500).json({ message: 'Failed to login user' });
+    }
+  };
+  
+const getUserInfo = async (req, res) => {
   try {
-    console.log(`Login attempt for email: ${email}`);
-    
-    // Check if the user exists
-    const user = await UserModel.findOne({ email });
+    console.log('Fetching user info...');
+
+    // Access user ID from req.user
+    const userId = req.user.userId; // Ensure req.user has userId
+
+    // Find the user by ID in MongoDB
+    const user = await UserModel.findById(userId).select('username email'); // Select only the fields you need
+
     if (!user) {
       console.log('User not found');
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    // Compare the password with the hashed password in the database
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      console.log('Invalid password');
-      return res.status(400).json({ message: 'Invalid email or password' });
-    }
-
-    // Generate a JWT token
-    const token = jwt.sign(
-      { userId: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '30m' }
-    );
-
-    
-    
-    console.log('Login successful, token generated');
-    return res.json({ token, message: 'Login successful' });
+    console.log('User info retrieved successfully');
+    return res.json({ username: user.username, email: user.email });
   } catch (err) {
-    console.error('Error logging in user:', err.message);
-    return res.status(500).json({ message: 'Failed to login user' });
+    console.error('Error retrieving user info:', err.message);
+    return res.status(500).json({ message: 'Error retrieving user info' });
   }
-}
+};
+
 
 
   module.exports ={
    LogReg,
-   Log
+   Log,
+   getUserInfo
   }
