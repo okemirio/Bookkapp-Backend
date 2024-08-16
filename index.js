@@ -17,7 +17,8 @@ const OrdersRoutes = require('./routes/orders/orders');
 
 // Enable CORS for cross-origin requests
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://bookkapp-backend.vercel.app'] }
+  origin: 'http://localhost:3000'
+ }
 
 // Load environment variables from .env file
 dotenv.config();
