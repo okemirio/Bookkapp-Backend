@@ -32,6 +32,7 @@ const addOrder = async (req, res) => {
   });
 
   try {
+
     const savedOrder = await newOrder.save();
     res.status(201).json({ message: 'Order placed successfully', order: savedOrder });
   } catch (error) {

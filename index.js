@@ -33,13 +33,15 @@ app.use(express.json());
 // MongoDB Atlas connection URI from environment variables
 const mongoURI = process.env.MONGO_URI;
 
+console.log(mongoURI)
 // Connect to MongoDB
-mongoose.connect(mongoURI, )
+mongoose.connect(mongoURI)
   .then(() => {
     console.log('Connected to MongoDB');
   })
   .catch((err) => {
     console.error('Error connecting to MongoDB:', err.message);
+    
   });
 
 
@@ -77,9 +79,6 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Protected route
-app.get('/dashboard', authenticateToken, (req, res) => {
-  res.send('This is the dashboard');
-});
 
 
 

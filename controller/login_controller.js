@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 
+
 const LogReg = async (req, res) => {
     const { username, password, email } = req.body;
   
