@@ -79,6 +79,9 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Protected route
+app.get('/dashboard', authenticateToken, (req, res) => {
+  res.send('This is the dashboard');
+});
 
 
 
