@@ -1,14 +1,13 @@
 {
-    "version": 2,
-    "builds": [
-      { "src": "package.json", "use": "@vercel/node" }
-    ],
-    "routes": [
-      { "src": "/(.*)", "dest": "/index.js" }
-    ],
-    "env": {
-      "MONGO_URI": "mongodb+srv://okemirio:okemirio@cluster1.7hwwxgn.mongodb.net/myDatabaseName?retryWrites=true&w=majority&appName=Cluster1", 
-      "JWT_SECRET": "22c07139a3dbeae346039fb630e0f30b8baff5213e05b055839067cfcad29b5936cd3510f589216620aecaae26f0a4dc"
-    }
-   }
-  
+  "version": 2,
+  "builds": [
+    { "src": "index.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/index.js" }
+  ],
+  "env": {
+    "MONGO_URI": "mongodb+srv://okemirio:okemirio@cluster1.7hwwxgn.mongodb.net/myDatabaseName?retryWrites=true&w=majority&appName=Cluster1",
+    "JWT_SECRET": "22c07139a3dbeae346039fb630e0f30b8baff5213e05b055839067cfcad29b5936cd3510f589216620aecaae26f0a4dc"
+  }
+}

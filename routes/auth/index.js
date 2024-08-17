@@ -35,7 +35,7 @@ module.exports = authenticateToken;
 routes.post('/register', LogReg)
   
   // Login route
-routes.post('/', Log)
+routes.post('/login', Log)
 
   // Get user information route
 routes.get('/userinfo', authenticateToken, getUserInfo);
