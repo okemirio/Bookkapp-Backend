@@ -29,7 +29,8 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // MongoDB Atlas connection URI from environment variables
-const mongoURI = process.env.MONGO_URI;
+const mongoURI = process.env.MONGO_URI || "your_fallback_mongo_uri";
+
 
 console.log(mongoURI);
 // Connect to MongoDB
@@ -46,6 +47,14 @@ app.use("/auth", authRoutes);
 app.use("/carts", cartsRoutes);
 app.use("/products", productsRoutes);
 app.use("/orders", OrdersRoutes);
+
+app.get('/dashboard', (req, res) => {
+  res.send('This is the dashboard');
+});
+app.get('/', (req, res) => {
+  res.send('This is the LOGIN');
+
+});
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
