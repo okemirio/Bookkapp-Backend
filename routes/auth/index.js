@@ -33,7 +33,6 @@ module.exports = authenticateToken;
 
 
 routes.post('/register', LogReg)
-
   
   // Login route
 routes.post('/login', Log)
