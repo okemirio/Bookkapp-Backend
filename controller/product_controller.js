@@ -82,16 +82,17 @@ const getAllProducts = async (req, res) => {
     }
 };
 
-const getProducts = (req, res) => {
-    const searchTerm = req.params.searchTerm;
-    // Example: Search for products using searchTerm
-    Product.find({ name: new RegExp(searchTerm, 'i') })
-      .then(products => res.json(products))
-      .catch(err => res.status(500).json({ message: err.message }));
+const getProducts = async (req, res) => {
+    try {
+      const { searchTerm } = req.params.searchTerm;
+      const products = await Product.find({ name: { $regex: searchTerm, $options: 'i' } });
+      return res.status(200).json(products);
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
   };
-  
 module.exports = {
-    addProduct, 
+    addProduct,
     deleteProduct,
     updateProduct,
     getAllProducts,
