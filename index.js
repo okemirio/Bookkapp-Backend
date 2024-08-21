@@ -17,7 +17,7 @@ const OrdersRoutes = require("./routes/orders/orders");
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000; // Use the environment variable for the port
+const port = process.env.PORT || 5000; // Use the environment variable for the port
 
 // Enable CORS for cross-origin requests
 const corsOptions = {

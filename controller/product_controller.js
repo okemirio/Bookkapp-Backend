@@ -84,11 +84,14 @@ const getAllProducts = async (req, res) => {
 
 const getProducts = async (req, res) => {
     try {
-      const { searchTerm } = req.params.searchTerm;
-      const products = await Product.find({ name: { $regex: searchTerm, $options: 'i' } });
-      return res.status(200).json(products);
+      const searchTerm = req.params.searchTerm;
+      const products = await Product.find({
+        name: new RegExp(searchTerm, 'i') // Case-insensitive search
+      });
+      res.json(products);
     } catch (err) {
-      return res.status(400).json({ error: err.message });
+      console.error('Error searching products:', err);
+      res.status(500).json({ message: 'Server error' });
     }
   };
 module.exports = {
