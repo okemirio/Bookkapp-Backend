@@ -32,6 +32,6 @@ routes.post('/products/add', authenticateToken, addProduct);
 routes.delete('/products/:id', authenticateToken, deleteProduct);
 routes.put('/products/:productId', authenticateToken, updateProduct);
 routes.get('/products', authenticateToken, getAllProducts);
-routes.get('/products/search', authenticateToken, getProducts);
+routes.get('/products/search/:searchTerm', authenticateToken, getProducts);
 
 module.exports = routes;
