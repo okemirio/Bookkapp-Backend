@@ -84,24 +84,38 @@ const getAllProducts = async (req, res) => {
 
 const getProducts = async (req, res) => {
     try {
-        const { searchTerm } = req.query;
+        const { searchTerm } = req.params;
+
         if (!searchTerm) {
             return res.status(400).json({ error: 'Search term is required' });
         }
-        
-        const products = await Product.find({
-            $or: [
-                { name: { $regex: searchTerm, $options: 'i' } },
-                { description: { $regex: searchTerm, $options: 'i' } }
-            ]
-        });
 
-        return res.status(200).json({ products });
+        // Check if searchTerm is a valid ObjectId
+        if (mongoose.Types.ObjectId.isValid(searchTerm)) {
+            const product = await Product.findById(searchTerm);
+
+            if (product) {
+                return res.status(200).json({ products: [product] });
+            } else {
+                return res.status(404).json({ error: 'Product not found' });
+            }
+        } else {
+            // Perform search by name or description
+            const products = await Product.find({
+                $or: [
+                    { name: { $regex: searchTerm, $options: 'i' } },
+                    { description: { $regex: searchTerm, $options: 'i' } }
+                ]
+            });
+
+            return res.status(200).json({ products });
+        }
     } catch (err) {
         console.error('Error searching products:', err);
         return res.status(500).json({ error: 'An error occurred while searching for products' });
     }
 };
+
 module.exports = {
     addProduct,
     deleteProduct,
