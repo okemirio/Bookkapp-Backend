@@ -82,36 +82,26 @@ const getAllProducts = async (req, res) => {
     }
 };
 
-const getProducts =  async (req, res) => {
-    const { name, category, price } = req.query;
-  
-    // Build the query object dynamically based on the parameters provided
-    let query = {};
-  
-    if (name) {
-      query.name = { $regex: name, $options: 'i' }; // Case-insensitive search by name
-    }
-  
-    if (category) {
-      query.category = { $regex: category, $options: 'i' }; // Case-insensitive search by category
-    }
-  
-    if (price) {
-      query.price = price; // Exact match for price; you can modify this for range queries
-    }
-  
+const getProducts = async (req, res) => {
     try {
-      const products = await Product.find(query);
-  
-      if (products.length === 0) {
-        return res.status(404).send({ error: 'No products found' });
-      }
-  
-      res.send(products);
-    } catch (error) {
-      res.status(500).send({ error: 'Internal server error' });
+        const { searchTerm } = req.query;
+        if (!searchTerm) {
+            return res.status(400).json({ error: 'Search term is required' });
+        }
+        
+        const products = await Product.find({
+            $or: [
+                { name: { $regex: searchTerm, $options: 'i' } },
+                { description: { $regex: searchTerm, $options: 'i' } }
+            ]
+        });
+
+        return res.status(200).json({ products });
+    } catch (err) {
+        console.error('Error searching products:', err);
+        return res.status(500).json({ error: 'An error occurred while searching for products' });
     }
-  };
+};
 module.exports = {
     addProduct,
     deleteProduct,
