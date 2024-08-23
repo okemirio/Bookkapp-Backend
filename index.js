@@ -12,6 +12,7 @@ const authRoutes = require("./routes/auth/index");
 const cartsRoutes = require("./routes/carts/carts");
 const productsRoutes = require("./routes/products/products");
 const OrdersRoutes = require("./routes/orders/orders");
+const FlutterWaveRoutes = require("./routes/flutterwave/index");
 
 // Load environment variables from .env file
 dotenv.config();
@@ -50,6 +51,7 @@ app.use("/auth", authRoutes);
 app.use("/carts", cartsRoutes);
 app.use("/products", productsRoutes);
 app.use("/orders", OrdersRoutes);
+app.use("/flutterwave", FlutterWaveRoutes);
 
 app.get('/dashboard', (req, res) => {
   res.send('This is the dashboard');
