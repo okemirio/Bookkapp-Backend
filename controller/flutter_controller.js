@@ -20,64 +20,43 @@ const authenticateToken = (req, res, next) => {
 
 // Payment route
 const payoutCard = async (req, res) => {
+  const { amount, email, card_number, cvv, expiry_month, expiry_year, fullname, phone_number, redirect_url } = req.body;
+
   const payload = {
-    card_number: "5531886652142950",
-    cvv: "564",
-    expiry_month: "09",
-    expiry_year: "21",
+    card_number,
+    cvv,
+    expiry_month,
+    expiry_year,
     currency: "ZMW",
-    amount: "100",
-    redirect_url: "https://www.google.com",
-    fullname: "Gift Banda",
-    email: "bandagift42@gmail.com",
-    phone_number: "0977560054",
+    amount,
+    redirect_url, // Use the provided redirect URL
+    fullname,
+    email,
+    phone_number,
     enckey: process.env.ENCRYPTION_KEY,
-    tx_ref: "MC-32444ee--4eerye4euee3rerds4423e43e" // Ensure this is unique per transaction
+    tx_ref: "MC-" + Date.now() // Ensure this is unique per transaction
   };
 
   try {
     const response = await flw.Charge.card(payload);
-
-    if (response.meta.authorization.mode === 'pin') {
-      const payloadWithPin = {
-        ...payload,
-        authorization: {
-          mode: "pin",
-          fields: ["pin"],
-          pin: 3310
-        }
-      };
-      const reCallCharge = await flw.Charge.card(payloadWithPin);
-      const callValidate = await flw.Charge.validate({
-        otp: "12345",
-        flw_ref: reCallCharge.data.flw_ref
-      });
-    
-      console.log(callValidate);
-    }
-
-    if (response.meta.authorization.mode === 'redirect') {
-      const url = response.meta.authorization.redirect;
-      return res.redirect(url); // Use res.redirect to redirect the user
-    }
-
-    res.status(200).json(response);
-
+    // ... rest of the function
   } catch (error) {
-    console.error('Error during payout:', error);
-    res.status(500).json({ error: 'Payment processing failed' });
+    // ... error handling
   }
 };
 
 const momo = async (req, res) => {
+  const { amount, email, phone_number, fullname, order_id, redirect_url } = req.body;
+
   const payload = {
-    tx_ref: "MC-15852113s09v5050e8",
-    amount: "1500",
+    tx_ref: "MC-" + Date.now(),
+    amount,
     currency: "ZMW",
-    email: "bandagift42@gmail.com",
-    phone_number: "0977560054",
-    fullname: "Gift Banda",
-    order_id: "URF_MMGH_1585323540079_5981535" // Unique identifier for momo transaction
+    email,
+    phone_number,
+    fullname,
+    order_id,
+    redirect_url // Use the provided redirect URL
   };
 
   try {

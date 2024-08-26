@@ -13,6 +13,7 @@ const addProduct = async (req, res) => {
     try {
         // Create a new product instance
         const newProduct = new Product({
+            
             name,
             description,
             price,
