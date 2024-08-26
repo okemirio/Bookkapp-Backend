@@ -13,7 +13,6 @@ const cartsRoutes = require("./routes/carts/carts");
 const productsRoutes = require("./routes/products/products");
 const OrdersRoutes = require("./routes/orders/orders");
 const FlutterWaveRoutes = require("./routes/flutterwave/index");
-
 // Load environment variables from .env file
 dotenv.config();
 
