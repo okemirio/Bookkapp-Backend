@@ -1,7 +1,7 @@
 const express = require('express');
 const routes = express.Router();
 const flutterwave = require('../../config/flutterwave');
-const { payoutCard, Webhook, redirect, momo, CreatePayment, PayCallback } = require('../../controller/flutter_controller');
+const { payoutCard, Webhook, redirect, CreateLink, CreatePayment, PayCallback,handleChargeResponse } = require('../../controller/flutter_controller');
 const jwt = require('jsonwebtoken');
 
 
@@ -32,8 +32,10 @@ const authenticateToken = (req, res, next) => {
 routes.post('/payoutCard', authenticateToken, payoutCard);
 routes.post('/webhook', authenticateToken, Webhook);
 routes.get('/redirect', authenticateToken, redirect);
-routes.post('/momo', authenticateToken, momo);
+routes.post('/CreateLink', authenticateToken, CreateLink);
 routes.post('/create-payment', authenticateToken, CreatePayment);
 routes.get('/payment-callback', authenticateToken, PayCallback);
+
+routes.post('/charge-response', handleChargeResponse);
 
 module.exports = routes;
