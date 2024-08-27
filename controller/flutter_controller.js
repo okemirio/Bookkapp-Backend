@@ -157,7 +157,7 @@ const PayCallback = async (req, res) => {
         `https://api.flutterwave.com/v3/charges/verify_by_id/${transaction_id}`,
         {
           headers: {
-            Authorization: `Bearer ${FLW_SECRET_KEY}`,
+            Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
           },
         }
       );
