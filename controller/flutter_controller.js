@@ -139,13 +139,15 @@ const CreatePayment = async (req, res) => {
       const paymentLink = response.data.data.link;
       res.status(200).json({ link: paymentLink });
     } else {
-      res.status(500).json({ error: "Error creating payment link" });
+      console.error("Error response:", response.data);
+      res.status(500).json({ error: response.data.message || "Error creating payment link" });
     }
   } catch (err) {
     console.error("Error creating payment:", err);
-    res.status(500).json({ error: "Error creating payment link" });
+    res.status(500).json({ error: err.response?.data?.message || "Error creating payment link" });
   }
 };
+
 
 const PayCallback = async (req, res) => {
   const { status, tx_ref, transaction_id } = req.query;
