@@ -108,7 +108,7 @@ const CreatePayment = async (req, res) => {
     tx_ref: `tx_${Date.now()}`, // Unique transaction reference
     amount,
     currency: "NGN",
-    redirect_url: "https://yourdomain.com/payment-callback", // URL to redirect after payment
+    redirect_url: "https://bookkapp-backend.vercel.app/flutterwave/payment-callback", // URL to redirect after payment
     customer: {
       email,
       name,
