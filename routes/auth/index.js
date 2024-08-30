@@ -3,7 +3,7 @@ const routes =express.Router();
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const { LogReg, Log, getUserInfo} = require('../../controller/login_controller.js');
+const { LogReg, Log, getUserInfo, refreshAccessToken} = require('../../controller/login_controller.js');
 const UserModel = require('../../models/user.js');
 
 
@@ -40,5 +40,7 @@ routes.post('/login', Log)
 
   // Get user information route
 routes.get('/userinfo', authenticateToken, getUserInfo);
+routes.post('/refresh-token', refreshAccessToken);
+
 
   module.exports = routes;

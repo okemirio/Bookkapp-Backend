@@ -46,56 +46,49 @@ const LogReg = async (req, res) => {
 
 // Login User
 const Log = async (req, res) => {
-    const { email, password } = req.body;
-    console.log(req.body);
-  
-    // Validate required fields
-    if (!email || !password) {
+  const { email, password } = req.body;
+
+  // Validate required fields
+  if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
-    }
-  
-    try {
-      console.log(`Login attempt for email: ${email}`);
-      
+  }
+
+  try {
       // Check if the user exists
       const user = await UserModel.findOne({ email });
       if (!user) {
-        console.log('User not found');
-        return res.status(400).json({ message: 'Invalid email or password' });
+          return res.status(400).json({ message: 'Invalid email or password' });
       }
-  
-      // Compare the password with the hashed password in the database
+
+      // Compare the password
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
-        console.log('Invalid password');
-        return res.status(400).json({ message: 'Invalid email or password' });
+          return res.status(400).json({ message: 'Invalid email or password' });
       }
-  
-      // Generate an Access Token
-      const expiresIn = 1800; // Token expiration time in seconds (30 minutes)
+
+      // Generate Access Token
       const accessToken = jwt.sign(
-        { userId: user._id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: `${expiresIn}s` }
+          { userId: user._id, email: user.email },
+          process.env.JWT_SECRET, // Ensure JWT_SECRET is in your .env file
+          { expiresIn: '30m' } // 30 minutes
       );
 
-      // Generate a Refresh Token
+      // Generate Refresh Token
       const refreshToken = jwt.sign(
-        { userId: user._id, email: user.email },
-        process.env.REFRESH_TOKEN_SECRET, // Stored in your .env file
-        { expiresIn: '7d' } // Refresh token expiration time (7 days)
+          { userId: user._id, email: user.email },
+          process.env.REFRESH_TOKEN_SECRET, // Your existing refresh token secret
+          { expiresIn: '7d' } // 7 days
       );
 
-      // Optionally, save the refresh token in the database with the user
-      // user.refreshToken = refreshToken;
-      // await user.save();
-  
-      console.log('Login successful, tokens generated');
-      return res.json({ accessToken, refreshToken, expiresIn, message: 'Login successful' });
-    } catch (err) {
+      // Optionally save the refresh token in the user's document
+      user.refreshToken = refreshToken;
+      await user.save();
+
+      return res.json({ accessToken, refreshToken, expiresIn: 1800, message: 'Login successful' });
+  } catch (err) {
       console.error('Error logging in user:', err.message);
       return res.status(500).json({ message: 'Failed to login user' });
-    }
+  }
 };
 
 // Get User Info
@@ -127,26 +120,28 @@ const refreshAccessToken = async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
-    return res.status(400).json({ message: 'Refresh token is required' });
+      return res.status(400).json({ message: 'Refresh token is required' });
   }
 
   try {
-    // Verify the refresh token
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+      // Verify the refresh token
+      const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
-    // Generate a new access token
-    const newAccessToken = jwt.sign(
-      { userId: decoded.userId, email: decoded.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '30m' } // 30 minutes
-    );
+      // Generate a new access token
+      const newAccessToken = jwt.sign(
+          { userId: decoded.userId, email: decoded.email },
+          process.env.JWT_SECRET,
+          { expiresIn: '30m' } // 30 minutes
+      );
 
-    return res.json({ accessToken: newAccessToken, expiresIn: 1800 });
+      return res.json({ accessToken: newAccessToken, expiresIn: 1800 });
   } catch (err) {
-    console.error('Error refreshing access token:', err.message);
-    return res.status(403).json({ message: 'Invalid refresh token' });
+      console.error('Error refreshing access token:', err.message);
+      return res.status(403).json({ message: 'Invalid refresh token' });
   }
 };
+
+
 
 module.exports = {
   LogReg,
