@@ -14,7 +14,9 @@
     "MONGO_URI": "mongodb+srv://okemirio:okemirio@cluster1.7hwwxgn.mongodb.net/myDatabaseName?retryWrites=true&w=majority&appName=Cluster1",
     "JWT_SECRET": "22c07139a3dbeae346039fb630e0f30b8baff5213e05b055839067cfcad29b5936cd3510f589216620aecaae26f0a4dc",
     "REFRESH_TOKEN_SECRET":"11bf292e22bf1e50a6c97f7c6b9d776cbd05d8838e407c78e877d650f8de2795d0ac5d622822adf306bf789ce183fc34",
-  
+    "FLUTTERWAVE_PUBLIC_KEY":"FLWPUBK_TEST-deaf66c2b3ed417be4199f3dc5301a3b-X",
+"FLUTTERWAVE_SECRET_KEY":"FLWSECK_TEST-d39e4ddab8a23f211c677b3b3a5ba29e-X",
+"FLUTTERWAVE_ENCRYPTION_KEY":"FLWSECK_TEST3e695288791e"
 
   }
 }
