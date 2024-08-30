@@ -1,91 +1,77 @@
 const express = require("express");
 const axios = require("axios");
-const routes = express.Router();
 const Flutterwave = require("flutterwave-node-v3"); // Ensure this is installed
+const routes = express.Router();
 const flw = new Flutterwave(
   process.env.FLUTTERWAVE_PUBLIC_KEY,
   process.env.FLUTTERWAVE_SECRET_KEY
 );
 
-// Payment route
-const payoutCard = async (req, res) => {
-  const {
-    amount,
-    email,
-    card_number,
-    cvv,
-    expiry_month,
-    expiry_year,
-    fullname,
-    phone_number,
-    redirect_url,
-  } = req.body;
-
-  const payload = {
-    card_number,
-    cvv,
-    expiry_month,
-    expiry_year,
-    currency: "NGN", // Set to the correct currency
-    amount,
-    redirect_url,
-    fullname,
-    email,
-    phone_number,
-    tx_ref: "MC-" + Date.now(),
-  };
-
+// Helper function to handle API requests
+const makeFlutterwaveRequest = async (url, method, payload) => {
   try {
-    const response = await axios.post(
-      'https://api.flutterwave.com/v3/charges?type=card',
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    res.status(200).json(response.data);
+    const response = await axios({
+      method,
+      url,
+      data: payload,
+      headers: {
+        Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
   } catch (error) {
-    console.error("Error during card payment:", error);
-    res.status(500).json({ error: "Card payment failed" });
+    console.error("Error during Flutterwave request:", error);
+    throw new Error(error.response?.data?.message || "Internal Server Error");
   }
 };
 
-// create payment link
+// Payment route
+const payoutCard = async (req, res) => {
+  const {
+    amount, email, card_number, cvv, expiry_month,
+    expiry_year, fullname, phone_number, redirect_url
+  } = req.body;
+
+  const payload = {
+    card_number, cvv, expiry_month, expiry_year,
+    currency: "NGN", amount, redirect_url, fullname,
+    email, phone_number, tx_ref: "MC-" + Date.now(),
+  };
+
+  try {
+    const data = await makeFlutterwaveRequest(
+      'https://api.flutterwave.com/v3/charges?type=card',
+      'post',
+      payload
+    );
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Create payment link
 const CreateLink = async (req, res) => {
   const { tx_ref, amount, currency, redirect_url, customer, customizations } = req.body;
 
   const payload = {
-    tx_ref,
-    amount,
-    currency,
-    redirect_url,
-    customer,
-    customizations
+    tx_ref, amount, currency, redirect_url, customer, customizations
   };
 
   try {
-    const response = await axios.post(
+    const data = await makeFlutterwaveRequest(
       'https://api.flutterwave.com/v3/payments',
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
+      'post',
+      payload
     );
-
-    if (response.data.status === 'success') {
-      res.status(200).json({ link: response.data.data.link });
+    if (data.status === 'success') {
+      res.status(200).json({ link: data.data.link });
     } else {
-      res.status(500).json({ error: response.data.message || 'Error creating payment link' });
+      res.status(500).json({ error: data.message || 'Error creating payment link' });
     }
   } catch (error) {
-    console.error('Error creating payment link:', error);
-    res.status(500).json({ error: 'Error creating payment link' });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -93,13 +79,9 @@ const CreateLink = async (req, res) => {
 const Webhook = async (req, res) => {
   try {
     const { tx_ref, status } = req.body;
-
-    // Log the webhook data for verification/debugging
     console.log(`Webhook received: tx_ref=${tx_ref}, status=${status}`);
-
     res.status(200).send("Webhook received");
   } catch (error) {
-    console.error("Webhook error:", error);
     res.status(500).send("Internal Server Error");
   }
 };
@@ -108,20 +90,18 @@ const Webhook = async (req, res) => {
 const redirect = (req, res) => {
   try {
     const { tx_ref, status } = req.query;
-
     console.log(`Redirect received: tx_ref=${tx_ref}, status=${status}`);
-
     if (status === "successful") {
       res.send("<h1>Payment Successful</h1>");
     } else {
       res.send("<h1>Payment Failed</h1>");
     }
   } catch (error) {
-    console.error("Redirect error:", error);
     res.status(500).send("Internal Server Error");
   }
 };
 
+// Create payment
 const CreatePayment = async (req, res) => {
   const { amount, email, name, phone_number } = req.body;
 
@@ -130,71 +110,44 @@ const CreatePayment = async (req, res) => {
     amount,
     currency: "NGN",
     redirect_url: "https://bookkapp-backend.vercel.app/flutterwave/payment-callback",
-    customer: {
-      email,
-      name,
-      phone_number,
-    },
-    customizations: {
-      title: "Your Payment Title",
-    },
-    configurations: {
-      session_duration: 10,
-      max_retry_attempt: 5,
-    },
+    customer: { email, name, phone_number },
+    customizations: { title: "Your Payment Title" },
+    configurations: { session_duration: 10, max_retry_attempt: 5 },
   };
 
   try {
-    const response = await axios.post(
+    const data = await makeFlutterwaveRequest(
       "https://api.flutterwave.com/v3/charges?type=mobilemoneyghana",
-      paymentDetails,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
+      'post',
+      paymentDetails
     );
-
-    if (response.data.status === "success") {
-      const paymentLink = response.data.data.link;
-      res.status(200).json({ link: paymentLink });
+    if (data.status === "success") {
+      res.status(200).json({ link: data.data.link });
     } else {
-      console.error("Error response:", response.data);
-      res.status(500).json({ error: response.data.message || "Error creating payment link" });
+      res.status(500).json({ error: data.message || "Error creating payment link" });
     }
-  } catch (err) {
-    console.error("Error creating payment:", err);
-    res.status(500).json({ error: err.response?.data?.message || "Error creating payment link" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
-
-
+// Payment callback
 const PayCallback = async (req, res) => {
   const { status, tx_ref, transaction_id } = req.query;
 
   if (status === "successful") {
     try {
-      const verificationResponse = await axios.get(
+      const data = await makeFlutterwaveRequest(
         `https://api.flutterwave.com/v3/charges/verify_by_id/${transaction_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
-          },
-        }
+        'get'
       );
-
-      const transactionData = verificationResponse.data.data;
-
-      if (transactionData.status === "successful") {
+      if (data.data.status === "successful") {
         // Confirm the transaction in your database or perform other actions
         res.send("<h1>Payment Successful</h1>");
       } else {
         res.send("<h1>Payment Failed</h1>");
       }
-    } catch (err) {
-      console.error("Error verifying payment:", err);
+    } catch (error) {
       res.status(500).send("Internal Server Error");
     }
   } else {
@@ -202,49 +155,31 @@ const PayCallback = async (req, res) => {
   }
 };
 
+// Handle charge response for account-based payments
 const handleChargeResponse = async (req, res) => {
   try {
-    // Extract necessary details from the request
     const { tx_ref, amount, account_bank, account_number, currency, email, phone_number, fullname } = req.body;
 
-    // Set up the payload
     const payload = {
-      tx_ref,
-      amount,
-      account_bank,
-      account_number,
-      currency,
-      email,
-      phone_number,
-      fullname
+      tx_ref, amount, account_bank, account_number, currency,
+      email, phone_number, fullname
     };
 
-    // Make the request to Flutterwave
-    const response = await axios.post(
+    const data = await makeFlutterwaveRequest(
       'https://api.flutterwave.com/v3/charges?type=account',
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
+      'post',
+      payload
     );
 
-    // Handle the response
-    if (response.data.status === 'success') {
-      const { data } = response.data;
-      // Process the successful response, e.g., saving details to the database
-      res.status(200).json(data);
+    if (data.status === 'success') {
+      res.status(200).json(data.data);
     } else {
-      res.status(500).json({ error: response.data.message || 'Error initiating charge' });
+      res.status(500).json({ error: data.message || 'Error initiating charge' });
     }
   } catch (error) {
-    console.error('Error handling charge response:', error);
-    res.status(500).json({ error: 'Error handling charge response' });
+    res.status(500).json({ error: error.message });
   }
 };
-
 
 module.exports = {
   payoutCard,
@@ -255,3 +190,4 @@ module.exports = {
   PayCallback,
   handleChargeResponse
 };
+
