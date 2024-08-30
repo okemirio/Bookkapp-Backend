@@ -47,48 +47,52 @@ const LogReg = async (req, res) => {
 const Log = async (req, res) => {
   const { email, password } = req.body;
 
+  // Validate required fields
   if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
+      return res.status(400).json({ message: 'Email and password are required' });
   }
 
   try {
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      console.log(`Login attempt failed: User not found for email ${email}`);
-      return res.status(400).json({ message: 'Invalid email or password' });
-    }
+      // Check if the user exists
+      const user = await UserModel.findOne({ email });
+      if (!user) {
+          return res.status(400).json({ message: 'Invalid email or password' });
+      }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      console.log(`Login attempt failed: Invalid password for user ${email}`);
-      return res.status(400).json({ message: 'Invalid email or password' });
-    }
+      // Compare the password
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+          return res.status(400).json({ message: 'Invalid email or password' });
+      }
 
-    const accessToken = jwt.sign(
-      { userId: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '30m' }
-    );
+      // Generate Access Token
+      const accessToken = jwt.sign(
+          { userId: user._id, email: user.email },
+          process.env.JWT_SECRET,
+          { expiresIn: '30m' } // 30 minutes
+      );
 
-    const refreshToken = jwt.sign(
-      { userId: user._id, email: user.email },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' }
-    );
+      // Generate Refresh Token
+      const refreshToken = jwt.sign(
+          { userId: user._id, email: user.email },
+          process.env.REFRESH_TOKEN_SECRET,
+          { expiresIn: '7d' } // 7 days
+      );
 
-    // Instead of saving to user document, save to a separate collection
-    await RefreshTokenModel.create({ userId: user._id, token: refreshToken });
+      // Save the refresh token in the user's document
+      user.refreshToken = refreshToken;
+      await user.save();
 
-    console.log(`User ${email} logged in successfully`);
-    return res.json({ 
-      accessToken, 
-      refreshToken, 
-      expiresIn: parseInt(process.env.ACCESS_TOKEN_EXPIRY) || 1800, 
-      message: 'Login successful' 
-    });
+      // Send response with tokens
+      return res.json({ 
+          accessToken, 
+          refreshToken, 
+          expiresIn: 1800, 
+          message: 'Login successful' 
+      });
   } catch (err) {
-    console.error('Error during login:', err);
-    return res.status(500).json({ message: 'An error occurred during login' });
+      console.error('Error logging in user:', err.message);
+      return res.status(500).json({ message: 'Failed to login user' });
   }
 };
 
