@@ -44,7 +44,6 @@ const LogReg = async (req, res) => {
   }
 }
 
-// Login User
 const Log = async (req, res) => {
   const { email, password } = req.body;
 
@@ -69,27 +68,34 @@ const Log = async (req, res) => {
       // Generate Access Token
       const accessToken = jwt.sign(
           { userId: user._id, email: user.email },
-          process.env.JWT_SECRET, // Ensure JWT_SECRET is in your .env file
+          process.env.JWT_SECRET,
           { expiresIn: '30m' } // 30 minutes
       );
 
       // Generate Refresh Token
       const refreshToken = jwt.sign(
           { userId: user._id, email: user.email },
-          process.env.REFRESH_TOKEN_SECRET, // Your existing refresh token secret
+          process.env.REFRESH_TOKEN_SECRET,
           { expiresIn: '7d' } // 7 days
       );
 
-      // Optionally save the refresh token in the user's document
+      // Save the refresh token in the user's document
       user.refreshToken = refreshToken;
       await user.save();
 
-      return res.json({ accessToken, refreshToken, expiresIn: 1800, message: 'Login successful' });
+      // Send response with tokens
+      return res.json({ 
+          accessToken, 
+          refreshToken, 
+          expiresIn: 1800, 
+          message: 'Login successful' 
+      });
   } catch (err) {
       console.error('Error logging in user:', err.message);
       return res.status(500).json({ message: 'Failed to login user' });
   }
 };
+
 
 // Get User Info
 const getUserInfo = async (req, res) => {
