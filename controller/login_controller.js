@@ -171,7 +171,6 @@ const sendPasswordResetLink = async (req, res) => {
     user.resetToken = resetToken;
     user.resetTokenExpiration = Date.now() + 3600000; // Token valid for 1 hour
     await user.save();
-    console.log(resetToken);
 
     // Set up email transporter for sending the reset link
     const transporter = nodemailer.createTransport({
@@ -183,13 +182,22 @@ const sendPasswordResetLink = async (req, res) => {
     });
 
     // Define the password reset email content
-    const resetUrl = `https://bookstore-alpha-silk.vercel.app/reset-password/${resetToken}`;
+    const baseUrl = process.env.NODE_ENV === 'production'
+    ? 'https://bookstore-alpha-silk.vercel.app'
+    : 'http://localhost:3000';
+  const resetUrl = `${baseUrl}/reset-password/${resetToken}`;
+  
     const mailOptions = {
-      to: user.email,
-      from: process.env.EMAIL_USER,
-      subject: 'Password Reset',
-      html: `<p>You requested a password reset</p><p>Click this <a href="${resetUrl}">link</a> to reset your password.</p>`
-    };
+        to: user.email,
+        from: process.env.EMAIL_USER,
+        subject: 'Password Reset',
+        html: `
+          <p>You requested a password reset</p>
+          <p>Click this <a href="${resetUrl}">link</a> to reset your password.</p>
+          <p>If you did not request a password reset, please ignore this email.</p>
+        `,
+      };
+      
 
     // Send the email
     transporter.sendMail(mailOptions, (err, response) => {
