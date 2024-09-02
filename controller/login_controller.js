@@ -174,7 +174,7 @@ const sendPasswordResetLink = async (req, res) => {
       });
   
       // Define the password reset email
-      const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+      const resetUrl = `https://bookkapp-backend.vercel.app/reset-password/${resetToken}`;
       const mailOptions = {
         to: user.email,
         from: process.env.EMAIL_USER,
