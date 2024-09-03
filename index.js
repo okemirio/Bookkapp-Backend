@@ -53,6 +53,10 @@ app.use("/products", productsRoutes);
 app.use("/orders", OrdersRoutes);
 app.use("/flutterwave", FlutterWaveRoutes);
 
+// Serve the React app for all other routes (client-side routing) – Only applicable if serving React build from backend
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../client/build', 'index.html')); // Adjust path as needed
+// });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
