@@ -4,7 +4,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const path = require("path"); // Required for serving static files
 const UserModel = require("./models/user");
 const products = require("./models/product");
 const Cart = require("./models/cart");
@@ -32,9 +31,6 @@ app.use(cors(corsOptions));
 // Middleware to parse JSON requests
 app.use(express.json());
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../client/build'))); // Adjust path as needed
-
 // MongoDB Atlas connection URI from environment variables
 const mongoURI = process.env.MONGO_URI;
 
@@ -57,10 +53,6 @@ app.use("/products", productsRoutes);
 app.use("/orders", OrdersRoutes);
 app.use("/flutterwave", FlutterWaveRoutes);
 
-// Serve the React app for all other routes (client-side routing)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build', 'index.html')); // Adjust path as needed
-});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
