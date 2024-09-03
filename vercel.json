@@ -18,7 +18,7 @@
     "FLUTTERWAVE_PUBLIC_KEY": "FLWPUBK_TEST-deaf66c2b3ed417be4199f3dc5301a3b-X",
     "FLUTTERWAVE_SECRET_KEY": "FLWSECK_TEST-d39e4ddab8a23f211c677b3b3a5ba29e-X",
     "FLUTTERWAVE_ENCRYPTION_KEY": "FLWSECK_TEST3e695288791e",
-    "NEXT_PUBLIC_BASE_URL=https":"https://bookstore-alpha-silk.vercel.app"
+    "NEXT_PUBLIC_BASE_URL":"https://bookstore-alpha-silk.vercel.app"
 
   }
 }
