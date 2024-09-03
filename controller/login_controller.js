@@ -158,7 +158,7 @@ const refreshAccessToken = async (req, res) => {
 const sendPasswordResetLink = async (req, res) => {
   const { email } = req.body;
 
-  try {
+  try { 
     // Find the user by email
     const user = await UserModel.findOne({ email });
     if (!user) {

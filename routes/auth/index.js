@@ -36,12 +36,12 @@ module.exports = authenticateToken;
 routes.post('/register', LogReg)
   
   // Login route
-routes.post('/login', Log)
+routes.post('/', Log)
 
   // Get user information route
 routes.get('/userinfo', authenticateToken, getUserInfo);
 routes.post('/refresh-token', refreshAccessToken);
-routes.post('/reset-password', sendPasswordResetLink);
+routes.post('/send-reset-link', sendPasswordResetLink);
 routes.post('/reset-password/:token', resetPassword);
 
   module.exports = routes;
