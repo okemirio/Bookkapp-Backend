@@ -143,7 +143,7 @@ const sendPasswordResetLink = async (req, res) => {
     });
 
     const baseUrl = process.env.NODE_ENV === 'production'
-  ? 'https://your-vercel-domain.vercel.app'
+  ? 'https://bookstore-alpha-silk.vercel.app'
   : 'http://localhost:3000';
     const resetUrl = `${baseUrl}/reset-password/${resetToken}`;
   
