@@ -179,8 +179,9 @@ const resetPassword =  async (req, res) => {
     const user = await UserModel.findOne({
       email,
       resetCode: code,
-      resetTokenExpiration: { $gt: Date.now() } // Ensure code is still valid
+      // resetTokenExpiration: { $gt: Date.now() } // Ensure code is still valid
     });
+    console.log('useremail', email)
     console.log('Reset Code:', code);
     console.log('User Found:', user);
     console.log('Reset Code Expiration:', user?.resetTokenExpiration);
