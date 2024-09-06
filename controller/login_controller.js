@@ -120,20 +120,22 @@ const refreshAccessToken = async (req, res) => {
 };
 
 // Send Password Reset Link
-const sendPasswordResetLink = async (req, res) => {
+const sendPasswordResetCode = async (req, res) => {
   const { email } = req.body;
 
-  try { 
+  try {
     const user = await UserModel.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Email not found' });
     }
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    user.resetToken = resetToken;
-    user.resetTokenExpiration = Date.now() + 3600000;
+    // Generate 6-digit code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetCode = resetCode;
+    user.resetCodeExpiration = Date.now() + 3600000; // 1 hour from now
     await user.save();
 
+    // Configure email transport
     const transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
@@ -142,60 +144,57 @@ const sendPasswordResetLink = async (req, res) => {
       }
     });
 
-    const baseUrl = process.env.NODE_ENV === 'production'
-  ? 'https://bookstore-alpha-silk.vercel.app'
-  : 'http://localhost:3000';
-    const resetUrl = `${baseUrl}/reset-password/${resetToken}`;
-  
+    // Send email with reset code
     const mailOptions = {
       to: user.email,
       from: process.env.EMAIL_USER,
-      subject: 'Password Reset',
+      subject: 'Password Reset Code',
       html: `
         <p>You requested a password reset</p>
-        <p>Click this <a href="${resetUrl}">link</a> to reset your password.</p>
+        <p>Your reset code is <b>${resetCode}</b></p>
         <p>If you did not request a password reset, please ignore this email.</p>
       `,
     };
 
     transporter.sendMail(mailOptions, (err) => {
       if (err) {
-        console.error('Error sending the email:', err);
+        console.error('Error sending email:', err);
         return res.status(500).json({ message: 'Failed to send reset email' });
       } else {
-        return res.status(200).json({ message: 'Password reset email sent' });
+        return res.status(200).json({ message: 'Password reset code sent' });
       }
     });
   } catch (err) {
-    console.error('Error sending password reset email:', err.message);
-    return res.status(500).json({ message: 'Failed to send password reset email' });
+    console.error('Error sending password reset code:', err.message);
+    return res.status(500).json({ message: 'Failed to send reset code' });
   }
 };
 
+
 // Reset Password
-const resetPassword = async (req, res) => {
-  const { token } = req.params;
-  const { password } = req.body;
+const resetPassword =  async (req, res) => {
+  const { email, code, newPassword } = req.body;
 
   try {
     const user = await UserModel.findOne({
-      resetToken: token,
-      resetTokenExpiration: { $gt: Date.now() }
+      email,
+      resetCode: code,
+      resetCodeExpiration: { $gt: Date.now() } // Ensure code is still valid
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired token' });
+      return res.status(400).json({ message: 'Invalid or expired reset code' });
     }
 
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     user.password = hashedPassword;
-    user.resetToken = undefined;
-    user.resetTokenExpiration = undefined;
+    user.resetCode = undefined;
+    user.resetCodeExpiration = undefined;
     await user.save();
 
-    return res.status(200).json({ message: 'Password has been reset', success: true });
+    return res.status(200).json({ message: 'Password has been reset successfully', success: true });
   } catch (err) {
     console.error('Error resetting password:', err.message);
     return res.status(500).json({ message: 'Failed to reset password' });
@@ -208,5 +207,5 @@ module.exports = {
   getUserInfo,
   refreshAccessToken,
   resetPassword,
-  sendPasswordResetLink
+  sendPasswordResetCode
 };
