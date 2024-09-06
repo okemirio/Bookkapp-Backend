@@ -41,7 +41,7 @@ routes.post('/', Log)
   // Get user information route
 routes.get('/userinfo', authenticateToken, getUserInfo);
 routes.post('/refresh-token', refreshAccessToken);
-routes.post('/send-reset-link', sendPasswordResetCode);
+routes.post('/send-reset-code', sendPasswordResetCode);
 routes.post('/reset-password', resetPassword);
 
   module.exports = routes;

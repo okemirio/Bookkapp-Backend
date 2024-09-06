@@ -132,7 +132,7 @@ const sendPasswordResetCode = async (req, res) => {
     // Generate 6-digit code
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     user.resetCode = resetCode;
-    user.resetCodeExpiration = Date.now() + 3600000; // 1 hour from now
+    user.resetTokenExpiration = Date.now() + 3600000; // 1 hour from now
     await user.save();
 
     // Configure email transport
