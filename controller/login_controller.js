@@ -174,12 +174,13 @@ const sendPasswordResetCode = async (req, res) => {
 // Reset Password
 const resetPassword =  async (req, res) => {
   const { email, code, newPassword } = req.body;
+  console.log('Received reset request:', { email, code });
 
   try {
     const user = await UserModel.findOne({
       email,
       resetCode: code,
-      // resetTokenExpiration: { $gt: Date.now() } // Ensure code is still valid
+      resetTokenExpiration: { $gt: Date.now() } // Ensure code is still valid
     });
     console.log('useremail', email)
     console.log('Reset Code:', code);
